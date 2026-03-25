@@ -1,4 +1,4 @@
-# Food Delivery Microservices
+# Food Delivery Microservices😋🍉🍒🍔🍟🍕
 
 ## Steps to do
 
@@ -32,4 +32,4 @@
     uvicorn main:app --reload --port 8002       ---->  🎉 You’ll see Swagger UI
 
 
-# Step 07: Test APIs - GET/ POST/ PUT/ DELETE
+### Step 07: Test APIs - GET/ POST/ PUT/ DELETE
