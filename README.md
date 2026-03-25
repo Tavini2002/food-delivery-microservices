@@ -1,6 +1,6 @@
 # Food Delivery Microservices
 
-##### Steps to do
+## Steps to do
 
 # Step 01: Switch to your branch
 
