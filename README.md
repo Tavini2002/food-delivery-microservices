@@ -29,7 +29,27 @@
 
 ### Step 06: Run your service in the browser 
 
-    uvicorn main:app --reload --port 8002       ---->  🎉 You’ll see Swagger UI
+    uvicorn main:app --reload --port 8002
+    open http://localhost:8002/docs       ---->  🎉 You’ll see Swagger UI
 
 
 ### Step 07: Test APIs - GET/ POST/ PUT/ DELETE
+
+#### How to add gateway
+Client → API Gateway → Services
+   1. cd gateway
+   2. python -m venv venv
+   3. venv\Scripts\activate
+   4. pip install fastapi uvicorn httpx
+   5. In main.py file --> add only url which is related to you
+        SERVICES = {
+            "user": "http://localhost:8001",
+            "restaurant": "http://localhost:8002",
+            "menu": "http://localhost:8003",
+            "order": "http://localhost:8004",
+            "delivery": "http://localhost:8005",
+            "payment": "http://localhost:8006"
+        }
+
+    6. Add routes
+        Ex:-->  @app.get("/gateway/menu")
