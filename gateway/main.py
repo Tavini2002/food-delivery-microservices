@@ -5,7 +5,12 @@ app = FastAPI(title="API Gateway")
 
 # 🔗 connect your services here
 SERVICES = {
-    "restaurant": "http://localhost:8002"
+    "user": "http://localhost:8001",
+    "restaurant": "http://localhost:8002",
+    "menu": "http://localhost:8003",
+    "order": "http://localhost:8004",
+    "delivery": "http://localhost:8005",
+    "payment": "http://localhost:8006"
 }
 
 # 🔁 forward request function
@@ -22,7 +27,9 @@ async def forward_request(service, path, method, body=None):
             response = await client.delete(url)
         return response.json()
 
-# 🌐 Gateway routes
+# 🌐 Gateway routes - add your routes here
+
+# Restaurant --------------------------------------------------------------------------
 @app.get("/gateway/restaurants")
 async def get_restaurants():
     return await forward_request("restaurant", "/api/restaurants", "GET")
@@ -31,3 +38,5 @@ async def get_restaurants():
 async def create_restaurant(req: Request):
     body = await req.json()
     return await forward_request("restaurant", "/api/restaurants", "POST", body)
+
+#--------------------------------------------------------------------------------------
