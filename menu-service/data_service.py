@@ -44,7 +44,7 @@ class MenuMockDataService:
     MenuItem(id=39, name="Cheese Nachos", price=550, description="Nachos topped with melted cheese and salsa", category="Snacks", size="Medium"),
     MenuItem(id=40, name="Strawberry Ice Cream", price=300, description="Strawberry flavored ice cream", category="Dessert", size="Small"),
         ]
-        self.next_id = 11
+        self.next_id = max(item.id for item in self.menu) + 1
     
     def get_all(self):
         return self.menu
