@@ -39,4 +39,26 @@ async def create_restaurant(req: Request):
     body = await req.json()
     return await forward_request("restaurant", "/api/restaurants", "POST", body)
 
+@app.get("/gateway/menu")
+async def get_all():
+    return await forward_request("menu", "/api/menu", "GET")
+
+@app.post("/gateway/menu")
+async def create(req: Request):
+    body = await req.json()
+    return await forward_request("menu", "/api/menu", "POST", body)
+
+@app.get("/gateway/menu/{id}")
+async def get_one(id: int):
+    return await forward_request("menu", f"/api/menu/{id}", "GET")
+
+@app.put("/gateway/menu/{id}")
+async def update(id: int, req: Request):
+    body = await req.json()
+    return await forward_request("menu", f"/api/menu/{id}", "PUT", body)
+
+@app.delete("/gateway/menu/{id}")
+async def delete(id: int):
+    return await forward_request("menu", f"/api/menu/{id}", "DELETE")
+
 #--------------------------------------------------------------------------------------
