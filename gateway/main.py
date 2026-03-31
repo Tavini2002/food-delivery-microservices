@@ -1,7 +1,24 @@
 from fastapi import FastAPI, Request
 import httpx
+from pydantic import BaseModel
+from typing import Optional
 
 app = FastAPI(title="API Gateway")
+
+# Models for request bodies
+class MenuCreate(BaseModel):
+    name: str
+    price: float
+    description: str
+    category: str
+    size: str
+
+class MenuUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    size: Optional[str] = None
 
 # 🔗 connect your services here
 SERVICES = {
@@ -39,23 +56,22 @@ async def create_restaurant(req: Request):
     body = await req.json()
     return await forward_request("restaurant", "/api/restaurants", "POST", body)
 
+# Menu --------------------------------------------------------------------------
 @app.get("/gateway/menu")
 async def get_all():
     return await forward_request("menu", "/api/menu", "GET")
 
 @app.post("/gateway/menu")
-async def create(req: Request):
-    body = await req.json()
-    return await forward_request("menu", "/api/menu", "POST", body)
+async def create(item: MenuCreate):
+    return await forward_request("menu", "/api/menu", "POST", item.dict())
 
 @app.get("/gateway/menu/{id}")
 async def get_one(id: int):
     return await forward_request("menu", f"/api/menu/{id}", "GET")
 
 @app.put("/gateway/menu/{id}")
-async def update(id: int, req: Request):
-    body = await req.json()
-    return await forward_request("menu", f"/api/menu/{id}", "PUT", body)
+async def update(id: int, item: MenuUpdate):
+    return await forward_request("menu", f"/api/menu/{id}", "PUT", item.dict())
 
 @app.delete("/gateway/menu/{id}")
 async def delete(id: int):
