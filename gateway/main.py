@@ -1,5 +1,11 @@
 from fastapi import FastAPI, Request
+from pydantic import BaseModel
+
 import httpx
+class Restaurant(BaseModel):
+    name: str
+    location: str
+    cuisine: str
 
 app = FastAPI(title="API Gateway")
 
@@ -35,9 +41,13 @@ async def get_restaurants():
     return await forward_request("restaurant", "/api/restaurants", "GET")
 
 @app.post("/gateway/restaurants")
-async def create_restaurant(req: Request):
-    body = await req.json()
-    return await forward_request("restaurant", "/api/restaurants", "POST", body)
+async def create_restaurant(data: Restaurant):
+    return await forward_request(
+        "restaurant",
+        "/api/restaurants",
+        "POST",
+        data.dict()
+    )
 
 #--------------------------------------------------------------------------------------
 
