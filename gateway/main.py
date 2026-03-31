@@ -39,6 +39,29 @@ async def create_restaurant(req: Request):
     body = await req.json()
     return await forward_request("restaurant", "/api/restaurants", "POST", body)
 
+#--------------------------------------------------------------------------------------
+
+# Delivery ---------------------------------------------------------------------------
+@app.get("/gateway/deliveries")
+async def get_deliveries():
+    # Delivery service list endpoints live under "/deliveries/"
+    return await forward_request("delivery", "/deliveries/", "GET")
+
+@app.post("/gateway/deliveries")
+async def create_delivery(order_id: int, driver: str):
+    # Delivery service expects `order_id` and `driver` as query params on POST.
+    path = f"/deliveries/?order_id={order_id}&driver={driver}"
+    return await forward_request("delivery", path, "POST", {})
+
+@app.get("/gateway/deliveries/{delivery_id}")
+async def get_delivery(delivery_id: int):
+    return await forward_request("delivery", f"/deliveries/{delivery_id}", "GET")
+
+@app.put("/gateway/deliveries/{delivery_id}/status")
+async def update_delivery_status(delivery_id: int, status: str):
+    # Delivery service expects `status` as a query param on PUT.
+    path = f"/deliveries/{delivery_id}/status?status={status}"
+    return await forward_request("delivery", path, "PUT", {})
 @app.get("/gateway/menu")
 async def get_all():
     return await forward_request("menu", "/api/menu", "GET")
