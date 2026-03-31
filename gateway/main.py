@@ -1,46 +1,64 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import httpx
 
-app = FastAPI(title="API Gateway", description="Main entry point for all microservices")
+app = FastAPI(title="API Gateway")
 
+# 🔗 connect your services here
 SERVICES = {
+    "user": "http://localhost:8001",
+    "restaurant": "http://localhost:8002",
+    "menu": "http://localhost:8003",
+    "order": "http://localhost:8004",
+    "delivery": "http://localhost:8005",
     "payment": "http://localhost:8006"
 }
 
-from fastapi import HTTPException
-
-from typing import Optional
-
-async def forward_request(service: str, path: str, method: str, body: Optional[dict] = None):
+# 🔁 forward request function
+async def forward_request(service, path, method, body=None):
     url = SERVICES[service] + path
-    try:
-        async with httpx.AsyncClient() as client:
-            if method == "GET":
-                response = await client.get(url)
-            elif method == "POST":
-                response = await client.post(url, json=body)
-            elif method == "PUT":
-                response = await client.put(url, json=body)
-            elif method == "DELETE":
-                response = await client.delete(url)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
+    async with httpx.AsyncClient() as client:
+        if method == "GET":
+            response = await client.get(url)
+        elif method == "POST":
+            response = await client.post(url, json=body)
+        elif method == "PUT":
+            response = await client.put(url, json=body)
+        elif method == "DELETE":
+            response = await client.delete(url)
         return response.json()
-    except httpx.RequestError as exc:
-        raise HTTPException(status_code=503, detail=f"Microservice '{service}' at {url} is unavailable.")
 
-# Gateway routes - payment service
-@app.get("/gateway/payments", tags=["Payment Service"])
-async def gateway_list_payments():
-    """Forward GET request to Payment microservice"""
-    return await forward_request("payment", "/api/payments", "GET")
+# 🌐 Gateway routes - add your routes here
 
-@app.post("/gateway/payments", tags=["Payment Service"])
-async def gateway_create_payment(body: dict):
-    """Forward POST request to Payment microservice"""
-    return await forward_request("payment", "/api/payments", "POST", body)
+# Restaurant --------------------------------------------------------------------------
+@app.get("/gateway/restaurants")
+async def get_restaurants():
+    return await forward_request("restaurant", "/api/restaurants", "GET")
 
-if __name__ == "__main__":
-    import uvicorn
-    # Run the Gateway on port 8000
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.post("/gateway/restaurants")
+async def create_restaurant(req: Request):
+    body = await req.json()
+    return await forward_request("restaurant", "/api/restaurants", "POST", body)
+
+@app.get("/gateway/menu")
+async def get_all():
+    return await forward_request("menu", "/api/menu", "GET")
+
+@app.post("/gateway/menu")
+async def create(req: Request):
+    body = await req.json()
+    return await forward_request("menu", "/api/menu", "POST", body)
+
+@app.get("/gateway/menu/{id}")
+async def get_one(id: int):
+    return await forward_request("menu", f"/api/menu/{id}", "GET")
+
+@app.put("/gateway/menu/{id}")
+async def update(id: int, req: Request):
+    body = await req.json()
+    return await forward_request("menu", f"/api/menu/{id}", "PUT", body)
+
+@app.delete("/gateway/menu/{id}")
+async def delete(id: int):
+    return await forward_request("menu", f"/api/menu/{id}", "DELETE")
+
+#--------------------------------------------------------------------------------------
