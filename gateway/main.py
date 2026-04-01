@@ -1,8 +1,7 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-
 import httpx
-from pydantic import BaseModel
+
 from typing import Optional
 class Restaurant(BaseModel):
     name: str
@@ -110,4 +109,16 @@ async def update(id: int, item: MenuUpdate):
 async def delete(id: int):
     return await forward_request("menu", f"/api/menu/{id}", "DELETE")
 
-#--------------------------------------------------------------------------------------
+#-----User---------------------------------------------------------------------------------
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
+
+@app.get("/gateway/users")
+async def get_users():
+    return await forward_request("user", "/api/users", "GET")
+
+@app.post("/gateway/users")
+async def create_user(data: User):
+    return await forward_request("user", "/api/users", "POST", data.dict())
