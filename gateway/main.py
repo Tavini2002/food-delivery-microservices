@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import httpx
 from typing import Optional
@@ -38,7 +38,28 @@ class PaymentCreate(BaseModel):
     payment_method: str 
 # ---------------------------------------------------------------------------
 
+from typing import Optional
+class Restaurant(BaseModel):
+    name: str
+    location: str
+    cuisine: str
+
 app = FastAPI(title="API Gateway")
+
+# Models for request bodies
+class MenuCreate(BaseModel):
+    name: str
+    price: float
+    description: str
+    category: str
+    size: str
+
+class MenuUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    size: Optional[str] = None
 
 # 🔗 connect your services here
 SERVICES = {
@@ -80,6 +101,8 @@ async def create_restaurant(data: Restaurant):
         data.dict()
     )
 
+#--------------------------------------------------------------------------------------
+
 # Delivery ---------------------------------------------------------------------------
 @app.get("/gateway/deliveries")
 async def get_deliveries():
@@ -96,13 +119,12 @@ async def create_delivery(order_id: int, driver: str):
 async def get_delivery(delivery_id: int):
     return await forward_request("delivery", f"/deliveries/{delivery_id}", "GET")
 
+# Menu --------------------------------------------------------------------------
 @app.put("/gateway/deliveries/{delivery_id}/status")
 async def update_delivery_status(delivery_id: int, status: str):
     # Delivery service expects `status` as a query param on PUT.
     path = f"/deliveries/{delivery_id}/status?status={status}"
     return await forward_request("delivery", path, "PUT", {})
-
-# Menu --------------------------------------------------------------------------
 @app.get("/gateway/menu")
 async def get_all():
     return await forward_request("menu", "/api/menu", "GET")
@@ -123,7 +145,12 @@ async def update(id: int, item: MenuUpdate):
 async def delete(id: int):
     return await forward_request("menu", f"/api/menu/{id}", "DELETE")
 
-# User ---------------------------------------------------------------------------------
+#-----User---------------------------------------------------------------------------------
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
+
 @app.get("/gateway/users")
 async def get_users():
     return await forward_request("user", "/api/users", "GET")
