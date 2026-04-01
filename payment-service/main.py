@@ -1,40 +1,44 @@
-from fastapi import FastAPI
-import httpx
+from fastapi import FastAPI, HTTPException, status
+from typing import List
+from models import Payment, PaymentCreate, PaymentUpdate
+from service import PaymentService
 
-app = FastAPI(title="API Gateway")
+app = FastAPI(title="Payment Service")
 
-SERVICES = {
-   
-    "payment": "http://localhost:8006"
-}
+payment_service = PaymentService()
 
+@app.get("/")
+def root():
+    return {"message": "Payment Service Running"}
 
-async def forward_request(service, path, method, body=None):
-    url = SERVICES[service] + path
-    async with httpx.AsyncClient() as client:
-        if method == "GET":
-            response = await client.get(url)
-        elif method == "POST":
-            response = await client.post(url, json=body)
-        elif method == "PUT":
-            response = await client.put(url, json=body)
-        elif method == "DELETE":
-            response = await client.delete(url)
-        else:
-            raise ValueError(f"Unsupported method: {method}")
-    return response.json()
+@app.get("/api/payments", response_model=List[Payment])
+def get_all():
+    return payment_service.get_all()
 
+@app.get("/api/payments/{id}", response_model=Payment)
+def get_one(id: int):
+    payment = payment_service.get_by_id(id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    return payment
 
-# Gateway routes - payment service only
-@app.get("/gateway/payments")
-async def gateway_list_payments():
-    return await forward_request("payment", "/api/payments", "GET")
+@app.post("/api/payments", response_model=Payment, status_code=status.HTTP_201_CREATED)
+def create(payment: PaymentCreate):
+    return payment_service.create(payment)
 
+@app.put("/api/payments/{id}", response_model=Payment)
+def update(id: int, payment: PaymentUpdate):
+    updated = payment_service.update(id, payment)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    return updated
 
-@app.post("/gateway/payments")
-async def gateway_create_payment(body: dict):
-    return await forward_request("payment", "/api/payments", "POST", body)
+@app.delete("/api/payments/{id}")
+def delete(id: int):
+    if not payment_service.delete(id):
+        raise HTTPException(status_code=404, detail="Payment not found")
+    return {"message": "Deleted"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8006)
