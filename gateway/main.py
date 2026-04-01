@@ -1,6 +1,42 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import httpx
+from typing import Optional
+
+# ---------------------------------------------------------------------------
+# Models for request bodies
+# ---------------------------------------------------------------------------
+class Restaurant(BaseModel):
+    name: str
+    location: str
+    cuisine: str
+
+class MenuCreate(BaseModel):
+    name: str
+    price: float
+    description: str
+    category: str
+    size: str
+
+class MenuUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    size: Optional[str] = None
+
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
+
+# 💳 YOUR NEW PAYMENT MODEL
+# Adjust these fields to match exactly what your Payment microservice expects
+class PaymentCreate(BaseModel):
+    order_id: int
+    amount: float
+    payment_method: str 
+# ---------------------------------------------------------------------------
 
 from typing import Optional
 class Restaurant(BaseModel):
@@ -122,3 +158,20 @@ async def get_users():
 @app.post("/gateway/users")
 async def create_user(data: User):
     return await forward_request("user", "/api/users", "POST", data.dict())
+
+# 💳 Payment ---------------------------------------------------------------------------
+# YOUR ROUTES, updated to use the original code structure (Pydantic validation)
+@app.get("/gateway/payments")
+async def get_payments():
+    return await forward_request("payment", "/api/payments", "GET")
+
+@app.post("/gateway/payments")
+async def create_payment(data: PaymentCreate):
+    return await forward_request("payment", "/api/payments", "POST", data.dict())
+
+# --------------------------------------------------------------------------------------
+# SERVER RUNNER (From your code)
+# --------------------------------------------------------------------------------------
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
